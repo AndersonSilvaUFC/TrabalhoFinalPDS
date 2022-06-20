@@ -46,6 +46,10 @@ public class IntegranteController {
 	
 	@PutMapping("/{id}")
 	public Integrante atualizarIntegrante(@PathVariable Integer id, @RequestBody Integrante integrante) {
-		return integranteReposiroty.save(integrante);
+		if(integranteReposiroty.existsById(id)) {
+			integrante.setId(id);
+			return integranteReposiroty.save(integrante);
+		} else
+			return null;
 	}
 }
