@@ -25,7 +25,9 @@ public class Sprint {
 	@NotBlank
 	private Date dataFinal;
 	
-	@OneToMany
+	@JsonIgnore
+	@OneToMany(fetch = FetchType.LAZY)
+  @JoinColumn(name = "sprint_id")
 	private List<Tarefa> tarefas;
 	
 	public Sprint(Integer id,@NotBlank String nome,@NotBlank Date dataInicial,@NotBlank Date dataFinal, List<Tarefa> tarefas) {
@@ -68,7 +70,6 @@ public class Sprint {
 	public void setTarefas(List<Tarefa> tarefas) {
 		this.tarefas = tarefas;
 	}
-
-	
 	
 }
+

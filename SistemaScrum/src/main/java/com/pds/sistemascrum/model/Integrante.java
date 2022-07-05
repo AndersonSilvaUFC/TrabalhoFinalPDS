@@ -1,12 +1,10 @@
 package com.pds.sistemascrum.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
 @Entity
@@ -21,8 +19,10 @@ public class Integrante {
 	
 	@NotBlank
 	private String cargo;
-	
-	@OneToMany
+
+	@JsonIgnore
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "integrante_id")
 	private List<Tarefa> tarefas;
 	
 	public Integrante() {}
