@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Sprint {
@@ -17,16 +18,18 @@ public class Sprint {
 	@NotBlank
 	private String nome;
 	
-	@NotBlank
+	@NotNull
 	private Date dataInicial;
 	
-	@NotBlank
+	@NotNull
 	private Date dataFinal;
 	
 	@JsonIgnore
 	@OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "sprint_id")
 	private List<Tarefa> tarefas;
+
+	public Sprint(){}
 	
 	public Sprint(Integer id,@NotBlank String nome,@NotBlank Date dataInicial,@NotBlank Date dataFinal, List<Tarefa> tarefas) {
 		super();
