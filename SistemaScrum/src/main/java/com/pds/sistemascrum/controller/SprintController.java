@@ -59,12 +59,12 @@ public class SprintController {
 			@ApiResponse(code = 404, message = "Sprint não encontrada")
 	})
 	@ApiOperation(value = "Recupera sprint pelo ID informado")
-	@GetMapping("/sprint/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<Sprint> buscarSprintPorId(Integer id) {
 		if(!(sprintRepository.existsById(id))) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}else {
-			return new ResponseEntity<>(sprintRepository.getById(id), HttpStatus.OK);
+			return new ResponseEntity<>(sprintRepository.findById(id).get(), HttpStatus.OK);
 		}
 	}
 

@@ -1,6 +1,7 @@
 package com.pds.sistemascrum.controller;
 
 import com.pds.sistemascrum.model.Integrante;
+import com.pds.sistemascrum.model.Sprint;
 import com.pds.sistemascrum.model.Tarefa;
 import com.pds.sistemascrum.repository.TarefaRepository;
 import io.swagger.annotations.ApiOperation;
@@ -24,6 +25,9 @@ public class TarefaController {
 
     @Autowired
     private IntegranteController integranteController;
+
+    @Autowired
+    private SprintController sprintController;
 
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retorna todas as tarefas"),
@@ -71,18 +75,22 @@ public class TarefaController {
 
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Tarefa criada, retorna a tarefa criada"),
-            @ApiResponse(code = 400, message = "Integrante reponsável pela tarefa inválido")
+            @ApiResponse(code = 400, message = "Integrante reponsável pela tarefa ou Sprint não existem")
     })
     @ApiOperation(value = "Cria uma tarefa")
     @PostMapping("")
     public ResponseEntity<Tarefa> cadastrarTarefa(@Valid @RequestBody Tarefa tarefa) {
-        ResponseEntity<Integrante> resposta = integranteController.recuperarIntegrante(tarefa.getIntegrante().getId());
+        ResponseEntity<Integrante> respostaIntegrante = integranteController.recuperarIntegrante(tarefa.getIntegrante().getId());
+        ResponseEntity<Sprint> respostaSprint = sprintController.buscarSprintPorId(tarefa.getIntegrante().getId());
 
-        if (resposta.getStatusCodeValue() == 200) {
-            tarefa.setIntegrante(resposta.getBody());
-            Tarefa t = tarefaRepository.save(tarefa);
+        if (respostaIntegrante.getStatusCodeValue() == 200) {
+            tarefa.setIntegrante(respostaIntegrante.getBody());
 
-            return new ResponseEntity<>(t, HttpStatus.CREATED);
+            if(respostaSprint.getStatusCodeValue() == 200){
+                tarefa.setSprint(respostaSprint.getBody());
+
+                return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.CREATED);
+            }
         }
 
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -90,24 +98,34 @@ public class TarefaController {
 
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Tarefa atualizada, retorna a tarefa atualizada"),
-            @ApiResponse(code = 400, message = "Integrante responsável pela tarefa não existe"),
+            @ApiResponse(code = 400, message = "Integrante responsável pela tarefa o sprint não existem"),
             @ApiResponse(code = 404, message = "Tarefa não encontrada para ser atualizada")
     })
     @ApiOperation(value = "Atualiza uma tarefa")
     @PutMapping("/{id}")
     public ResponseEntity<Tarefa> atualizarTarefa(@PathVariable Integer id, @Valid @RequestBody Tarefa tarefa){
         Integrante integranteTarefa = tarefa.getIntegrante();
+        Sprint sprintTarefa = tarefa.getSprint();
         if(tarefaRepository.existsById(id)) {
             tarefa.setId(id);
             if(integranteTarefa != null) {
-                if (integranteController.recuperarIntegrante(integranteTarefa.getId()).getStatusCodeValue() == 200)
-                    return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.OK);
-                else
+                if (integranteController.recuperarIntegrante(integranteTarefa.getId()).getStatusCodeValue() == 200) {
+                    if (sprintTarefa != null) {
+                        if (sprintController.buscarSprintPorId(sprintTarefa.getId()).getStatusCodeValue() == 200)
+                            return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.OK);
+                        else
+                            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                    }else{
+                        return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.OK);
+                    }
+                }else {
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                }
+            }else {
+                return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.OK);
             }
-            return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.OK);
-        } else
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ApiResponses(value = {
