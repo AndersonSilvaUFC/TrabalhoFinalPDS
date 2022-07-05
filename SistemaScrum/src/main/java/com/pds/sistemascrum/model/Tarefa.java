@@ -1,10 +1,6 @@
 package com.pds.sistemascrum.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
 @Entity
@@ -22,6 +18,9 @@ public class Tarefa {
 	
 	@ManyToOne
 	private Integrante integrante;
+
+	@ManyToOne
+	private Sprint sprint;
 	
 	public Tarefa() {}
 
@@ -64,5 +63,12 @@ public class Tarefa {
 	public void setIntegrante(Integrante integrante) {
 		this.integrante = integrante;
 	}
-	
+
+	public Sprint getSprint() {
+		return sprint;
+	}
+
+	public void setSprint(Sprint sprint) {
+		this.sprint = sprint;
+	}
 }
