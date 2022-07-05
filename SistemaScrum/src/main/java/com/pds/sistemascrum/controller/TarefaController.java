@@ -80,20 +80,23 @@ public class TarefaController {
     @ApiOperation(value = "Cria uma tarefa")
     @PostMapping("")
     public ResponseEntity<Tarefa> cadastrarTarefa(@Valid @RequestBody Tarefa tarefa) {
-        ResponseEntity<Integrante> respostaIntegrante = integranteController.recuperarIntegrante(tarefa.getIntegrante().getId());
-        ResponseEntity<Sprint> respostaSprint = sprintController.buscarSprintPorId(tarefa.getIntegrante().getId());
-
-        if (respostaIntegrante.getStatusCodeValue() == 200) {
-            tarefa.setIntegrante(respostaIntegrante.getBody());
-
-            if(respostaSprint.getStatusCodeValue() == 200){
-                tarefa.setSprint(respostaSprint.getBody());
-
-                return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.CREATED);
-            }
+        if(tarefa.getIntegrante() != null) {
+            ResponseEntity<Integrante> respostaIntegrante = integranteController.recuperarIntegrante(tarefa.getIntegrante().getId());
+            if (respostaIntegrante.getStatusCodeValue() == 200)
+                tarefa.setIntegrante(respostaIntegrante.getBody());
+            else
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (tarefa.getIntegrante() != null) {
+            ResponseEntity<Sprint> respostaSprint = sprintController.buscarSprintPorId(tarefa.getIntegrante().getId());
+            if(respostaSprint.getStatusCodeValue() == 200)
+                tarefa.setSprint(respostaSprint.getBody());
+            else
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.CREATED);
     }
 
     @ApiResponses(value = {
@@ -106,24 +109,20 @@ public class TarefaController {
     public ResponseEntity<Tarefa> atualizarTarefa(@PathVariable Integer id, @Valid @RequestBody Tarefa tarefa){
         Integrante integranteTarefa = tarefa.getIntegrante();
         Sprint sprintTarefa = tarefa.getSprint();
+
         if(tarefaRepository.existsById(id)) {
             tarefa.setId(id);
             if(integranteTarefa != null) {
-                if (integranteController.recuperarIntegrante(integranteTarefa.getId()).getStatusCodeValue() == 200) {
-                    if (sprintTarefa != null) {
-                        if (sprintController.buscarSprintPorId(sprintTarefa.getId()).getStatusCodeValue() == 200)
-                            return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.OK);
-                        else
-                            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-                    }else{
-                        return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.OK);
-                    }
-                }else {
+                if(integranteController.recuperarIntegrante(integranteTarefa.getId()).getStatusCodeValue() != 200)
                     return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-                }
-            }else {
-                return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.OK);
             }
+
+            if(sprintTarefa != null){
+                if(sprintController.buscarSprintPorId(sprintTarefa.getId()).getStatusCodeValue() != 200)
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+            return new ResponseEntity<>(tarefaRepository.save(tarefa), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }

@@ -16,7 +16,7 @@ public class Tarefa {
 	@NotBlank
 	private String status;
 	
-	@ManyToOne
+	@ManyToOne()
 	private Integrante integrante;
 
 	@ManyToOne
