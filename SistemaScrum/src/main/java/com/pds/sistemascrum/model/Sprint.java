@@ -1,13 +1,11 @@
 package com.pds.sistemascrum.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
 @Entity
@@ -27,7 +25,7 @@ public class Sprint {
 	
 	@JsonIgnore
 	@OneToMany(fetch = FetchType.LAZY)
-  @JoinColumn(name = "sprint_id")
+    @JoinColumn(name = "sprint_id")
 	private List<Tarefa> tarefas;
 	
 	public Sprint(Integer id,@NotBlank String nome,@NotBlank Date dataInicial,@NotBlank Date dataFinal, List<Tarefa> tarefas) {
