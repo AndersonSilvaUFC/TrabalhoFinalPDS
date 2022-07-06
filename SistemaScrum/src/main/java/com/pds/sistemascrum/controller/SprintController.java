@@ -37,12 +37,11 @@ public class SprintController {
 	@ApiOperation(value = "Cria sprint")
 	@PostMapping("")
 	public ResponseEntity<Sprint> cadastrarSprint(@RequestBody Sprint sprint) {
-		if(sprint.getDataInicial().before(sprint.getDataFinal())) {
-			sprintRepository.save(sprint);
-			return new ResponseEntity<>(sprint, HttpStatus.CREATED);
-		}else {
+		if(sprint.getDataInicial().before(sprint.getDataFinal()))
+			return new ResponseEntity<>(sprintRepository.save(sprint), HttpStatus.CREATED);
+		else
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
+
 	}
 
 	@ApiResponses(value = {
@@ -60,7 +59,7 @@ public class SprintController {
 	})
 	@ApiOperation(value = "Recupera sprint pelo ID informado")
 	@GetMapping("/{id}")
-	public ResponseEntity<Sprint> buscarSprintPorId(Integer id) {
+	public ResponseEntity<Sprint> buscarSprintPorId(@PathVariable Integer id) {
 		if(!(sprintRepository.existsById(id))) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}else {
@@ -85,6 +84,7 @@ public class SprintController {
 
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Sprint atualizada, retorna a sprint atualizada"),
+			@ApiResponse(code = 400, message = "Erro, data inicial mais recente que a final"),
 			@ApiResponse(code = 404, message = "Não encontrada a sprint para ser atualizada")
 	})
 	@ApiOperation(value = "Atualiza a sprint")
@@ -92,8 +92,10 @@ public class SprintController {
 	public ResponseEntity<Sprint> atualizarSprint(@PathVariable Integer id, @RequestBody Sprint sprint) {
 		if(sprintRepository.existsById(id)) {
 			sprint.setId(id);
-			sprintRepository.save(sprint);
-			return new ResponseEntity<>(sprintRepository.findById(id).get(), HttpStatus.OK);
+			if(sprint.getDataInicial().before(sprint.getDataFinal()))
+				return new ResponseEntity<>(sprintRepository.save(sprint), HttpStatus.OK);
+			else
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		} else
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
